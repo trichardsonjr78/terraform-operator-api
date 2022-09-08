@@ -15,7 +15,7 @@ func Init(url string) *gorm.DB {
 		log.Fatalln(err)
 	}
 
-	db.AutoMigrate(&models.TFOResource{}, &models.TFOTaskLog{})
+	db.AutoMigrate(&models.TFOResource{}, &models.TFOTaskLog{}, &models.Cluster{})
 
 	return db
 }
