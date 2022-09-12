@@ -4,13 +4,13 @@ import "gorm.io/gorm"
 
 type TFOTaskLog struct {
 	gorm.Model
-	TaskType        string
-	Generation      string
-	Rerun           int
-	Message         string
+	TaskType        string `json:"taskType"`
+	Generation      string `json:"generation"`
+	Rerun           int    `json:"rerun"`
+	Message         string `json:"message"`
 	TFOResource     TFOResource
 	TFOResourceUUID string `json:"tfo_resource_uuid"`
-	LineNo          string
+	LineNo          string `json:"lineNo"`
 }
 
 type TFOResource struct {
@@ -24,12 +24,11 @@ type TFOResource struct {
 
 	// foreign key to a cluster
 	Cluster   Cluster
-	ClusterID string `json:"clusterid"`
+	ClusterID string `json:"cluster_id"`
 
 	CurrentGeneration string `json:"currentgeneration"`
 }
 
 type Cluster struct {
-	ClusterID string `gorm:"primaryKey"`
-	Name      string `json:"name"`
+	ClusterID string `json:"cluster_id" gorm:"primaryKey"`
 }
