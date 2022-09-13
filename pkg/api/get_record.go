@@ -47,14 +47,27 @@ func (h handler) GetLogByGeneration(c *gin.Context) {
 }
 
 func (h handler) GetUuidByClusterID(c *gin.Context) {
-	clusterName := c.Param("cluster_id")
-	var clusterInfo models.TFOResource
+	clusterID := c.Param("cluster_id")
+	var clusterIdInfo models.TFOResource
 
-	if result := h.DB.Where("cluster_id = ?", clusterName).First(&clusterInfo); result.Error != nil {
+	if result := h.DB.Where("cluster_id = ?", clusterID).First(&clusterIdInfo); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
 
-	c.JSON(http.StatusOK, &clusterInfo)
+	c.JSON(http.StatusOK, &clusterIdInfo)
+
+}
+
+func (h handler) GeIdByClusterName(c *gin.Context) {
+	clusterName := c.Param("cluster_name")
+	var clusterNameInfo models.Cluster
+
+	if result := h.DB.Where("name = ?", clusterName).First(&clusterNameInfo); result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+
+	c.JSON(http.StatusOK, &clusterNameInfo)
 
 }
