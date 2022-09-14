@@ -1,30 +1,37 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type TFOTaskLog struct {
 	gorm.Model
-	TaskType        string
-	Generation      string
-	Rerun           int
-	Message         string
+	TaskType        string `json:"task_type"`
+	Generation      string `json:"generation"`
+	Rerun           int    `json:"rerun"`
+	Message         string `json:"message"`
 	TFOResource     TFOResource
 	TFOResourceUUID string `json:"tfo_resource_uuid"`
-	LineNo          string
+	LineNo          string `json:"line_no"`
 }
 
 type TFOResource struct {
 	UUID      string `json:"uuid" gorm:"primaryKey"`
-	CreatedBy string
-	CreatedAt string
-	UpdatedBy string
-	UpdatedAt string
-	DeletedBy string
-	DeletedAt string
+	CreatedBy string `json:"created_by"`
+	CreatedAt string `json:"created_at"`
+	UpdatedBy string `json:"updated_by"`
+	UpdatedAt string `json:"updated_at"`
+	DeletedBy string `json:"deleted_by"`
+	DeletedAt string `json:"deleeted_at"`
 
-	// NamespacedName comprises a resource name, with a mandatory namespace,
-	// rendered as "<namespace>/<name>".
-	NamespacedName string
+	// foreign key to a cluster
+	Cluster   Cluster
+	ClusterID uint `json:"cluster"`
 
-	CurrentGeneration string
+	CurrentGeneration string `json:"current_generation"`
+}
+
+type Cluster struct {
+	gorm.Model
+	Name string `json:"cluster_name" `
 }
