@@ -3,7 +3,7 @@ package db
 import (
 	"log"
 
-	"github.com/trichardsonjr78/terraform-operator-api/pkg/common/models"
+	"github.com/GalleyBytes/terraform-operator-api/pkg/common/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

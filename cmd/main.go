@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/GalleyBytes/terraform-operator-api/pkg/api"
+	"github.com/GalleyBytes/terraform-operator-api/pkg/common/db"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"github.com/trichardsonjr78/terraform-operator-api/pkg/api"
-	"github.com/trichardsonjr78/terraform-operator-api/pkg/common/db"
 )
 
 func main() {

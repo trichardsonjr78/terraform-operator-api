@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
+	"github.com/GalleyBytes/terraform-operator-api/pkg/common/models"
 	"github.com/gin-gonic/gin"
-	"github.com/trichardsonjr78/terraform-operator-api/pkg/common/models"
 )
 
 func (h handler) GetLog(c *gin.Context) {

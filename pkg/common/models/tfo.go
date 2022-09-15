@@ -23,8 +23,8 @@ type TFOResource struct {
 	UpdatedAt string `json:"updated_at"`
 	DeletedBy string `json:"deleted_by"`
 	DeletedAt string `json:"deleeted_at"`
-	Namespace string `json:"namespace"`
-	Name      string `json:"name"`
+	// Namespace string `json:"namespace"`
+	// Name      string `json:"name"`
 
 	// foreign key to a cluster
 	Cluster   Cluster
