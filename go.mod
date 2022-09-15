@@ -1,4 +1,4 @@
-module github.com/trichardsonjr78/terraform-operator-api
+module github.com/GalleyBytes/terraform-operator-api
 
 go 1.19
 
