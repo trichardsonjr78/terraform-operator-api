@@ -99,7 +99,6 @@ func (h handler) GetClustersResourcesLogs(c *gin.Context) {
 	//clusterID := c.Param("cluster")
 	generation := c.Param("generation")
 	uuid := c.Param("resource_uuid")
-	//var tfoResourceLogs models.TFOTaskLog
 
 	// if result := h.DB.Where("cluster_id = ?", clusterID).Find(&tfoResource); result.Error != nil {
 	// 	c.AbortWithError(http.StatusNotFound, result.Error)
