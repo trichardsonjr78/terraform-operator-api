@@ -17,7 +17,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	routes := r.Group("/api/v1/")
 	routes.GET("/", h.GetRecords)
 	routes.GET("/clusters", h.GetClusters)
-	routes.GET("/cluster/:cluster_id", h.GetClustersResources)
+	routes.GET("/cluster/:cluster_id/resources", h.GetClustersResources)
 	routes.GET("/cluster_id/:cluster_id", h.GetUuidByClusterID)
 	routes.GET("/resource/:resource_uuid/logs/generation/:generation", h.GetClustersResourcesLogs)
 	//routes.GET("/cluster/:cluster_id/resource/:resource_uuid/logs/generation/:generation", h.GetUuidByClusterID)

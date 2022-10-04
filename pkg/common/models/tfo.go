@@ -28,12 +28,12 @@ type TFOResource struct {
 
 	// foreign key to a cluster
 	Cluster   Cluster
-	ClusterID uint `json:"cluster"`
+	ClusterID uint `json:"cluster_id"`
 
 	CurrentGeneration string `json:"current_generation"`
 }
 
 type Cluster struct {
 	gorm.Model
-	Name string `json:"cluster_name" `
+	Name string `json:"name" `
 }
