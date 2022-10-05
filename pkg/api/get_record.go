@@ -33,6 +33,16 @@ func (h handler) GetLogByGeneration(c *gin.Context) {
 
 }
 
+func (h handler) GetDistinctGeneration(c *gin.Context) {
+	uuid := c.Param("resource_uuid")
+	var gen []int
+	if result := h.DB.Raw("SELECT DISTINCT generation FROM tfo_task_logs WHERE tfo_resource_uuid = ?", &uuid).Scan(&gen); result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+	c.JSON(http.StatusOK, &gen)
+}
+
 func (h handler) GetUuidByClusterID(c *gin.Context) {
 	clusterID := c.Param("cluster_id")
 	var clusterIdInfo models.TFOResource
@@ -147,42 +157,13 @@ func (h handler) GetRerunByNumber(c *gin.Context) {
 	c.JSON(http.StatusOK, &rerunNumbers)
 }
 
-// func (h handler) GetHighestRerunLog(c *gin.Context) {
-// 	uuid := c.Param("tfo_resource_uuid")
-// 	taskType := c.Param("task_type")
-// 	var highestRerun models.TFOTaskLog
-// 	rerunValue := 4
-
-// 	// var result int64
-// 	// row := h.DB.Table("tfo_task_logs").Select("message").Where("task_type = ? AND tfo_resource_uuid = ?", &taskType, &uuid).Where("task_type = ? AND tfo_resource_uuid = ?").Select("max(rerun)").Row()
-// 	// row.Scan(&result)
-
-// 	if result := h.DB.Select("message").Where("task_type = ? AND tfo_resource_uuid = ? AND rerun = ?", &taskType, &uuid, &rerunValue).First(&highestRerun); result.Error != nil {
-// 		c.AbortWithError(http.StatusNotFound, result.Error)
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, &highestRerun)
-// }
-
 func (h handler) GetHighestRerunLog(c *gin.Context) {
-	//uuid := c.Param("tfo_resource_uuid")
-	//taskType := c.Param("task_type")
 	generation := c.Param("generation")
-	var highestReruns []models.TFOTaskLog
-	//rerunValue := 4
+	var maxRerun int
 
-	// var result int64
-	// row := h.DB.Table("tfo_task_logs").Select("message").Where("task_type = ? AND tfo_resource_uuid = ?", &taskType, &uuid).Where("task_type = ? AND tfo_resource_uuid = ?").Select("max(rerun)").Row()
-	// row.Scan(&result)
-
-	// select max(rerun) from tfo_task_logs where generation = '4';
-	//if result := h.DB.Select("(MAX(rerun))").Where("task_type = ? AND tfo_resource_uuid = ?", &taskType, &uuid).Find(&highestReruns); result.Error != nil {
-	//query := db.Table("order").Select("MAX(order.finished_at) as latest").Joins("left join user user on order.user_id = user.id"
-	if result := h.DB.Table("tfo_task_logs").Select("(MAX(rerun))").Where("generation = ?", &generation).Find(&highestReruns); result.Error != nil {
+	if result := h.DB.Raw("SELECT MAX(rerun) FROM tfo_task_logs WHERE generation = ?", &generation).Scan(&maxRerun); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
-
-	c.JSON(http.StatusOK, &highestReruns)
+	c.JSON(http.StatusOK, &maxRerun)
 }
