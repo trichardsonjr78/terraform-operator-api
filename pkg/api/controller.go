@@ -23,7 +23,9 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	routes.GET("/resource/:resource_uuid/generations", h.GetDistinctGeneration)
 	routes.GET("/cluster_name/:cluster_name", h.GeIdByClusterName)
 	routes.GET("/:tfo_resource_uuid", h.GetLog)
-	routes.GET("/logsByGeneration/:tfo_resource_uuid/:generation", h.GetLogByGeneration)
-	routes.GET("/queryRerun/:tfo_resource_uuid/:task_type/:rerun_value/:generation", h.GetRerunByNumber)
-	routes.GET("/highestRerun/:generation", h.GetHighestRerunLog)
+	routes.GET("/logs_by_generation/:tfo_resource_uuid/:generation", h.GetLogByGeneration)
+	routes.GET("/resource/:resource_uuid", h.GetResourceByUUID)
+	///resource/:resource_uuid/logs/generation/:generation/rerun/:rerun for below
+	routes.GET("/query_rerun/:tfo_resource_uuid/:task_type/:rerun_value/:generation", h.GetRerunByNumber)
+	routes.GET("/highest_rerun/:generation", h.GetHighestRerunLog)
 }

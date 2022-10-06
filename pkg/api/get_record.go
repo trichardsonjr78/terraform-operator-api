@@ -22,25 +22,25 @@ func (h handler) GetLog(c *gin.Context) {
 func (h handler) GetLogByGeneration(c *gin.Context) {
 	uuid := c.Param("tfo_resource_uuid")
 	generation := c.Param("generation")
-	var gnerationLogs []models.TFOTaskLog
+	var generationLogs []models.TFOTaskLog
 
-	if result := h.DB.Where("generation = ? AND tfo_resource_uuid = ?", &generation, &uuid).Find(&gnerationLogs); result.Error != nil {
+	if result := h.DB.Where("generation = ? AND tfo_resource_uuid = ?", &generation, &uuid).Find(&generationLogs); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
 
-	c.JSON(http.StatusOK, &gnerationLogs)
+	c.JSON(http.StatusOK, &generationLogs)
 
 }
 
 func (h handler) GetDistinctGeneration(c *gin.Context) {
 	uuid := c.Param("resource_uuid")
-	var gen []int
-	if result := h.DB.Raw("SELECT DISTINCT generation FROM tfo_task_logs WHERE tfo_resource_uuid = ?", &uuid).Scan(&gen); result.Error != nil {
+	var generation []int
+	if result := h.DB.Raw("SELECT DISTINCT generation FROM tfo_task_logs WHERE tfo_resource_uuid = ?", &uuid).Scan(&generation); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
-	c.JSON(http.StatusOK, &gen)
+	c.JSON(http.StatusOK, &generation)
 }
 
 func (h handler) GetUuidByClusterID(c *gin.Context) {
@@ -70,41 +70,65 @@ func (h handler) GeIdByClusterName(c *gin.Context) {
 }
 
 func (h handler) GetRecords(c *gin.Context) {
-	var Records []models.TFOResource
+	var records []models.TFOResource
 
-	if result := h.DB.Find(&Records); result.Error != nil {
+	if result := h.DB.Find(&records); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
 
-	c.JSON(http.StatusOK, &Records)
+	c.JSON(http.StatusOK, &records)
 }
 
 func (h handler) GetClusters(c *gin.Context) {
-	var Clusters []models.Cluster
+	var clusters []models.Cluster
 
-	if result := h.DB.Find(&Clusters); result.Error != nil {
+	if result := h.DB.Find(&clusters); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
 
-	c.JSON(http.StatusOK, &Clusters)
+	c.JSON(http.StatusOK, &clusters)
 }
 
 func (h handler) GetClustersResources(c *gin.Context) {
-	var Resources []models.TFOResource
+	var resources []models.TFOResource
 	clusterID := c.Param("cluster_id")
 
-	if result := h.DB.Where("cluster_id = ?", clusterID).Find(&Resources); result.Error != nil {
+	if result := h.DB.Where("cluster_id = ?", clusterID).Find(&resources); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
 
-	c.JSON(http.StatusOK, &Resources)
+	c.JSON(http.StatusOK, &resources)
 }
 
+func (h handler) GetResourceByUUID(c *gin.Context) {
+	var tfoResource models.TFOResource
+	uuid := c.Param("resource_uuid")
+
+	if result := h.DB.First(&tfoResource, "uuid = ?", uuid); result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+
+	c.JSON(http.StatusOK, &tfoResource)
+}
+
+// func (h handler) GetResourceLogsByUUID(c *gin.Context) {
+// 	var tfoResource models.TFOTaskLog
+// 	uuid := c.Param("resource_uuid")
+
+// 	if result := h.DB.First(&tfoResource, "uuid = ?", uuid); result.Error != nil {
+// 		c.AbortWithError(http.StatusNotFound, result.Error)
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, &tfoResource)
+// }
+
 func (h handler) GetClustersResourcesLogs(c *gin.Context) {
-	var Logs []models.TFOTaskLog
+	var logs []models.TFOTaskLog
 	var tfoResource models.TFOResource
 	//clusterID := c.Param("cluster")
 	generation := c.Param("generation")
@@ -124,12 +148,12 @@ func (h handler) GetClustersResourcesLogs(c *gin.Context) {
 		generation = tfoResource.CurrentGeneration
 	}
 
-	if result := h.DB.Where("tfo_resource_uuid = ? AND generation = ?", &uuid, &generation).Find(&Logs); result.Error != nil {
+	if result := h.DB.Where("tfo_resource_uuid = ? AND generation = ?", &uuid, &generation).Find(&logs); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
 		return
 	}
 
-	c.JSON(http.StatusOK, &Logs)
+	c.JSON(http.StatusOK, &logs)
 }
 
 func (h handler) GetRerunByNumber(c *gin.Context) {
