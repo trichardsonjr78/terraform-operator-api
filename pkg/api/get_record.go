@@ -7,16 +7,39 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Response struct {
+	StatusInfo StatusInfo  `json:"StatusInfo"`
+	Data       interface{} `json:"Data"`
+}
+
+type StatusInfo struct {
+	StatusCode int64  `json:"StatusCode"`
+	Message    string `json:"Message"`
+}
+
+func response(httpstatus int64, message string, results interface{}) *Response {
+	resp := Response{
+		StatusInfo: StatusInfo{
+			StatusCode: httpstatus,
+			Message:    message,
+		},
+		Data: results,
+	}
+	return &resp
+}
+
 func (h handler) GetLog(c *gin.Context) {
 	uuid := c.Param("tfo_resource_uuid")
 	var log models.TFOTaskLog
 
 	if result := h.DB.First(&log, "tfo_resource_uuid = ?", uuid); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
+		resp := response(http.StatusNotFound, "tfo resource uuid not found", log)
+		c.JSON(int(resp.StatusInfo.StatusCode), &resp)
 		return
 	}
-
-	c.JSON(http.StatusOK, &log)
+	resp := response(http.StatusOK, "tfo resource uuid found", log)
+	c.JSON(int(resp.StatusInfo.StatusCode), &resp)
 }
 
 func (h handler) GetLogByGeneration(c *gin.Context) {
@@ -26,10 +49,13 @@ func (h handler) GetLogByGeneration(c *gin.Context) {
 
 	if result := h.DB.Where("generation = ? AND tfo_resource_uuid = ?", &generation, &uuid).Find(&generationLogs); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
+		resp := response(http.StatusNotFound, "generation logs not found", generationLogs)
+		c.JSON(int(resp.StatusInfo.StatusCode), &resp)
 		return
 	}
 
-	c.JSON(http.StatusOK, &generationLogs)
+	resp := response(http.StatusOK, "generation logs found", generationLogs)
+	c.JSON(int(resp.StatusInfo.StatusCode), &resp)
 
 }
 
