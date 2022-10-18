@@ -28,4 +28,5 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	///resource/:resource_uuid/logs/generation/:generation/rerun/:rerun for below
 	routes.GET("/query_rerun/:tfo_resource_uuid/:task_type/:rerun_value/:generation", h.GetRerunByNumber)
 	routes.GET("/highest_rerun/:generation", h.GetHighestRerunLog)
+	routes.GET("/highest_rerun_for_tfo_resource/:tfo_resource_uuid", h.GetHighestRerunLogForTFO)
 }

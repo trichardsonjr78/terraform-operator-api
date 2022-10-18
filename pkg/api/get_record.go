@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/GalleyBytes/terraform-operator-api/pkg/common/models"
@@ -216,4 +217,27 @@ func (h handler) GetHighestRerunLog(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, &maxRerun)
+}
+
+func (h handler) GetHighestRerunLogForTFO(c *gin.Context) {
+	uuid := c.Param("tfo_resource_uuid")
+	var init models.TFOTaskLog
+	var setup models.TFOTaskLog
+
+	if result := h.DB.Raw("SELECT * FROM tfo_task_logs WHERE tfo_resource_uuid = ? AND task_type = 'init' AND rerun = (select MAX(rerun) from tfo_task_logs)", &uuid).Scan(&init); result.Error != nil {
+		//if result := h.DB.Raw("SELECT MAX(rerun) FROM tfo_task_logs WHERE tfo_resource_uuid = ?", &uuid).Scan(&maxRerun); result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+	fmt.Println(init)
+	c.JSON(http.StatusOK, &init)
+
+	// SELECT * FROM tfo_task_logs WHERE tfo_resource_uuid = '3ee03fd7-d7ac-4fbd-8c4c-d573bc7360ef' AND rerun = (select MAX(rerun) from tfo_task_logs);
+	if result := h.DB.Raw("SELECT * FROM tfo_task_logs WHERE tfo_resource_uuid = ? AND task_type = 'setup' AND rerun = (select MAX(rerun) from tfo_task_logs)", &uuid).Scan(&setup); result.Error != nil {
+		//if result := h.DB.Raw("SELECT MAX(rerun) FROM tfo_task_logs WHERE tfo_resource_uuid = ?", &uuid).Scan(&maxRerun); result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
+	}
+	fmt.Println(setup)
+	c.JSON(http.StatusOK, &setup)
 }
