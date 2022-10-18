@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 
 	"github.com/GalleyBytes/terraform-operator-api/pkg/common/models"
@@ -180,7 +181,54 @@ func (h handler) GetClustersResourcesLogs(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, &logs)
+	// We've retrieved all the logs for the generation at this point, but we need to ensure we only display
+	// the latest rerun logs. If a user wants a specific rerun, a different query will need to be constructed
+
+	// We must have knowledge of the order of logs to return the correct result to the user. Each task type
+	// can have a different rerun number, and therefore, we have to make sure that when the results are
+	// returned, the latest tasks do not have earlier reruns than previous tasks.
+	//
+	//    9 |                       |
+	//    8 |                       |
+	// N  7 |   Good Results        |   Bad result becuase the apply log
+	// U  6 |                       |   doesn't reflect the result of plan
+	// R  5 |                       |
+	// E  4 |                       |             x
+	// R  3 |         x   x         |                x
+	//    2 |                       |
+	//    1 |    x                  |        x
+	//    0 |_x_____________________|____x________________________
+	//       p   t   n   y               p   t   n   y
+	//      u   i   a   l               u   i   a   l
+	//     t   n   l   p               t   n   l   p
+	//    e   i   p   p               e   i   p   p
+	//   s           a               s           a
+
+	// Create this in order to store the logs filtered by the rerun sort
+	filteredResuilts := []models.TFOTaskLog{}
+
+	// Log order:
+	taskTypesInOrder := []string{
+		"setup",
+		"preinit",
+		"init",
+		"postinit",
+		"preplan",
+		"plan",
+		"postplan",
+		"preapply",
+		"apply",
+		"postapply",
+	}
+
+	currentRerun := float64(0)
+	for _, taskLog := range taskTypesInOrder {
+		highestRerunLogs, rerun := highestRerun(logs, taskLog, currentRerun)
+		filteredResuilts = append(filteredResuilts, highestRerunLogs...)
+		currentRerun = rerun
+	}
+
+	c.JSON(http.StatusOK, &filteredResuilts)
 }
 
 func (h handler) GetRerunByNumber(c *gin.Context) {
@@ -240,4 +288,26 @@ func (h handler) GetHighestRerunLogForTFO(c *gin.Context) {
 	}
 	fmt.Println(setup)
 	c.JSON(http.StatusOK, &setup)
+}
+
+func highestRerun(taskLogs []models.TFOTaskLog, taskType string, minimum float64) ([]models.TFOTaskLog, float64) {
+	logs := []models.TFOTaskLog{}
+	highestRerunObservedInLogs := 0
+	for _, taskLog := range taskLogs {
+		if taskLog.TaskType == taskType {
+			if taskLog.Rerun > highestRerunObservedInLogs {
+				highestRerunObservedInLogs = taskLog.Rerun
+			}
+		}
+	}
+
+	// return only the highest rerun. It is ok to return an empty list, this just indicates that the task
+	// has not produced logs yet.
+	rerun := math.Max(float64(highestRerunObservedInLogs), minimum)
+	for _, taskLog := range taskLogs {
+		if taskLog.TaskType == taskType && taskLog.Rerun == int(rerun) {
+			logs = append(logs, taskLog)
+		}
+	}
+	return logs, rerun
 }
