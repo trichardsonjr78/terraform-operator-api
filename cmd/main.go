@@ -10,6 +10,7 @@ import (
 func main() {
 	viper.SetConfigFile("./pkg/common/envs/.env")
 	viper.ReadInConfig()
+	viper.AutomaticEnv()
 
 	port := viper.Get("PORT").(string)
 	dbUrl := viper.Get("DB_URL").(string)
