@@ -37,3 +37,11 @@ type Cluster struct {
 	gorm.Model
 	Name string `json:"name" `
 }
+
+type TFOResourceSpec struct {
+	gorm.Model
+	TFOResource     TFOResource
+	TFOResourceUUID string `json:"tfo_resource_uuid"`
+	Generation      string
+	ResourceSpec    string
+}
