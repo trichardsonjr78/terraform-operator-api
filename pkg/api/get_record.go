@@ -62,7 +62,7 @@ func (h handler) GetLogByGeneration(c *gin.Context) {
 }
 
 func (h handler) GetDistinctGeneration(c *gin.Context) {
-	uuid := c.Param("resource_uuid")
+	uuid := c.Param("tfo_resource_uuid")
 	var generation []int
 	if result := h.DB.Raw("SELECT DISTINCT generation FROM tfo_task_logs WHERE tfo_resource_uuid = ?", &uuid).Scan(&generation); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
@@ -133,7 +133,7 @@ func (h handler) GetClustersResources(c *gin.Context) {
 
 func (h handler) GetResourceByUUID(c *gin.Context) {
 	var tfoResource models.TFOResource
-	uuid := c.Param("resource_uuid")
+	uuid := c.Param("tfo_resource_uuid")
 
 	if result := h.DB.First(&tfoResource, "uuid = ?", uuid); result.Error != nil {
 		c.AbortWithError(http.StatusNotFound, result.Error)
@@ -145,7 +145,7 @@ func (h handler) GetResourceByUUID(c *gin.Context) {
 
 // func (h handler) GetResourceLogsByUUID(c *gin.Context) {
 // 	var tfoResource models.TFOTaskLog
-// 	uuid := c.Param("resource_uuid")
+// 	uuid := c.Param("tfo_resource_uuid")
 
 // 	if result := h.DB.First(&tfoResource, "uuid = ?", uuid); result.Error != nil {
 // 		c.AbortWithError(http.StatusNotFound, result.Error)
@@ -155,12 +155,34 @@ func (h handler) GetResourceByUUID(c *gin.Context) {
 // 	c.JSON(http.StatusOK, &tfoResource)
 // }
 
+func highestRerun(taskLogs []models.TFOTaskLog, taskType string, minimum float64) ([]models.TFOTaskLog, float64) {
+	logs := []models.TFOTaskLog{}
+	highestRerunObservedInLogs := 0
+	for _, taskLog := range taskLogs {
+		if taskLog.TaskType == taskType {
+			if taskLog.Rerun > highestRerunObservedInLogs {
+				highestRerunObservedInLogs = taskLog.Rerun
+			}
+		}
+	}
+
+	// return only the highest rerun. It is ok to return an empty list, this just indicates that the task
+	// has not produced logs yet.
+	rerun := math.Max(float64(highestRerunObservedInLogs), minimum)
+	for _, taskLog := range taskLogs {
+		if taskLog.TaskType == taskType && taskLog.Rerun == int(rerun) {
+			logs = append(logs, taskLog)
+		}
+	}
+	return logs, rerun
+}
+
 func (h handler) GetClustersResourcesLogs(c *gin.Context) {
 	var logs []models.TFOTaskLog
 	var tfoResource models.TFOResource
 	//clusterID := c.Param("cluster")
 	generation := c.Param("generation")
-	uuid := c.Param("resource_uuid")
+	uuid := c.Param("tfo_resource_uuid")
 
 	// if result := h.DB.Where("cluster_id = ?", clusterID).Find(&tfoResource); result.Error != nil {
 	// 	c.AbortWithError(http.StatusNotFound, result.Error)
@@ -290,24 +312,24 @@ func (h handler) GetHighestRerunLogForTFO(c *gin.Context) {
 	c.JSON(http.StatusOK, &setup)
 }
 
-func highestRerun(taskLogs []models.TFOTaskLog, taskType string, minimum float64) ([]models.TFOTaskLog, float64) {
-	logs := []models.TFOTaskLog{}
-	highestRerunObservedInLogs := 0
-	for _, taskLog := range taskLogs {
-		if taskLog.TaskType == taskType {
-			if taskLog.Rerun > highestRerunObservedInLogs {
-				highestRerunObservedInLogs = taskLog.Rerun
-			}
+func (h handler) GetResourceSpec(c *gin.Context) {
+	uuid := c.Param("tfo_resource_uuid")
+	generation := c.Param("generation")
+	var tfoResource models.TFOResource
+	var tfoResourcespec models.TFOResourceSpec
+
+	if generation == "latest" {
+		if result := h.DB.First(&tfoResource, "uuid = ?", &uuid); result.Error != nil {
+			c.AbortWithError(http.StatusNotFound, result.Error)
+			return
 		}
+		generation = tfoResource.CurrentGeneration
 	}
 
-	// return only the highest rerun. It is ok to return an empty list, this just indicates that the task
-	// has not produced logs yet.
-	rerun := math.Max(float64(highestRerunObservedInLogs), minimum)
-	for _, taskLog := range taskLogs {
-		if taskLog.TaskType == taskType && taskLog.Rerun == int(rerun) {
-			logs = append(logs, taskLog)
-		}
+	if result := h.DB.Where("tfo_resource_uuid = ? AND generation =?", uuid, generation).Find(&tfoResourcespec); result.Error != nil {
+		c.AbortWithError(http.StatusNotFound, result.Error)
+		return
 	}
-	return logs, rerun
+
+	c.JSON(http.StatusOK, &tfoResourcespec)
 }
