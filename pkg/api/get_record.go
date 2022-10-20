@@ -316,7 +316,7 @@ func (h handler) GetResourceSpec(c *gin.Context) {
 	uuid := c.Param("tfo_resource_uuid")
 	generation := c.Param("generation")
 	var tfoResource models.TFOResource
-	var tfoResourcespec models.TFOResourceSpec
+	var tfoResourcespec []models.TFOResourceSpec
 
 	if generation == "latest" {
 		if result := h.DB.First(&tfoResource, "uuid = ?", &uuid); result.Error != nil {
